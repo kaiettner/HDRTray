@@ -20,7 +20,7 @@ namespace hdr {
 enum class Status { Unsupported = 0, Off = 1, On = 2 };
 
 Status GetWindowsHDRStatus();
-std::optional<Status> ToggleHDRStatus();
+std::optional<Status> ToggleHDRStatus(std::vector<unsigned int>& displayIds);
 
 } // namespace hdr
 

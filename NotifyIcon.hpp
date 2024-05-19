@@ -41,6 +41,8 @@ class NotifyIcon
     bool dark_mode_icons = false;
     hdr::Status hdr_status = hdr::Status::Unsupported;
 
+    std::vector<unsigned int> configured_displays;
+
 public:
     NotifyIcon(HWND hwnd);
     ~NotifyIcon();

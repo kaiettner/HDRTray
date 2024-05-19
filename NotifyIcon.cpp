@@ -20,11 +20,14 @@
 
 #include "Resource.h"
 
+#include "Config.h"
+
 #include "Windows10Colors.h"
 
 #include <CommCtrl.h>
 #include <windowsx.h>
 #include <winreg.h>
+#include <stdexcept>
 
 static const wchar_t autostart_registry_path[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 static const wchar_t autostart_registry_key[] = L"HDRTray";
@@ -98,6 +101,15 @@ bool NotifyIcon::Add()
 {
     FetchHDRStatus();
     FetchDarkMode();
+
+    try {
+        configured_displays = config::ReadConfigFile();
+    } catch (const std::runtime_error &e)
+    {
+        // TODO: Maybe display some kind of error message
+        // for now continue without config, which just toggles all displays
+    }
+    
 
     auto notify_add = notify_template;
     notify_add.hIcon = GetCurrentIconSet().hdr_off;
@@ -220,7 +232,7 @@ void NotifyIcon::ToggleHDR()
     POINT mouse_pos;
     bool has_mouse_pos = GetCursorPos(&mouse_pos);
 
-    auto new_status = hdr::ToggleHDRStatus();
+    auto new_status = hdr::ToggleHDRStatus(configured_displays);
 
     if(new_status) {
         hdr_status = *new_status;

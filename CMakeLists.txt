@@ -69,7 +69,7 @@ target_sources(HDRTray PRIVATE
                "HDRTray.manifest"
                "HDRTray.rc"
                "NotifyIcon.cpp"
-               )
+                "Config.cpp" "Config.h")
 target_compile_definitions(HDRTray PRIVATE UNICODE _UNICODE)
 target_include_directories(HDRTray PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_link_libraries(HDRTray PRIVATE Windows10Colors comctl32)
@@ -95,9 +95,23 @@ if(MARKO_AVAILABLE)
     add_custom_target(ConvertMD ALL DEPENDS ${GENERATED_HTML_FILES})
 endif()
 
+
+set(CONFIG_FILE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/config.cfg")
+
+# Copy the config.cfg file after build
+add_custom_command(
+    TARGET HDRTray POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CONFIG_FILE_SRC}" "${CMAKE_CURRENT_BINARY_DIR}/config.cfg"
+    COMMENT "Copying config.cfg to output directory"
+)
+
 install(TARGETS HDRTray
         RUNTIME
         DESTINATION ".")
+
+install (FILES "${CONFIG_FILE_SRC}" DESTINATION ".")
+
 if(MARKO_AVAILABLE)
     foreach(md_file LICENSE README)
         install(FILES "${MD_OUTPUT_DIR}/${md_file}.html"

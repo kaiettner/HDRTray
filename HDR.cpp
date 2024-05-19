@@ -74,7 +74,7 @@ Status GetWindowsHDRStatus()
     return status;
 }
 
-std::optional<Status> ToggleHDRStatus()
+std::optional<Status> ToggleHDRStatus(std::vector<unsigned int> &displayIds)
 {
     std::optional<Status> status;
 
@@ -96,14 +96,21 @@ std::optional<Status> ToggleHDRStatus()
         if (ERROR_SUCCESS == DisplayConfigGetDeviceInfo(&getColorInfo.header)) {
             if (getColorInfo.advancedColorSupported) {
                 Status new_status = Status::Unsupported;
-                if (getColorInfo.advancedColorEnabled) // HDR is ON
-                {
-                    setColorState.enableAdvancedColor = FALSE;
-                    new_status = Status::Off;
-                } else // HDR is OFF
-                {
-                    setColorState.enableAdvancedColor = TRUE;
-                    new_status = Status::On;
+                bool no_config = displayIds.empty();
+                bool configured =
+                    std::find(displayIds.begin(), displayIds.end(), setColorState.header.id) != displayIds.end();
+
+                if (no_config || configured)
+                { // only toggle when part of configuration or when no displays are configured at all
+                    if (getColorInfo.advancedColorEnabled) // HDR is ON
+                    {
+                        setColorState.enableAdvancedColor = FALSE;
+                        new_status = Status::Off;
+                    } else // HDR is OFF
+                    {
+                        setColorState.enableAdvancedColor = TRUE;
+                        new_status = Status::On;
+                    }
                 }
                 if (ERROR_SUCCESS == DisplayConfigSetDeviceInfo(&setColorState.header)) {
                     if(!status)
